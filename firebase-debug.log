@@ -1,0 +1,50 @@
+[debug] [2018-04-05T14:27:21.705Z] ----------------------------------------------------------------------
+[debug] [2018-04-05T14:27:21.705Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\sohel\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve --only hosting,functions
+[debug] [2018-04-05T14:27:21.705Z] CLI Version:   3.18.0
+[debug] [2018-04-05T14:27:21.705Z] Platform:      win32
+[debug] [2018-04-05T14:27:21.705Z] Node Version:  v8.10.0
+[debug] [2018-04-05T14:27:21.705Z] Time:          Thu Apr 05 2018 20:27:21 GMT+0600 (Bangladesh Standard Time)
+[debug] [2018-04-05T14:27:21.705Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-04-05T14:27:21.721Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-04-05T14:27:21.721Z] > authorizing via signed-in user
+[debug] [2018-04-05T14:27:21.736Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/firenode-5276f  
+  
+ Thu Apr 05 2018 20:27:21 GMT+0600 (Bangladesh Standard Time)
+[debug] [2018-04-05T14:27:23.159Z] <<< HTTP RESPONSE 200
+[debug] [2018-04-05T14:27:23.162Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/firenode-5276f/tokens  
+  
+ Thu Apr 05 2018 20:27:23 GMT+0600 (Bangladesh Standard Time)
+[debug] [2018-04-05T14:27:24.267Z] <<< HTTP RESPONSE 200
+[debug] [2018-04-05T14:27:24.267Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/firenode-5276f  
+  
+ Thu Apr 05 2018 20:27:24 GMT+0600 (Bangladesh Standard Time)
+[debug] [2018-04-05T14:27:25.683Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Serving from 'D:\FirebaseWebProject\FireApp'...
+[info] 
+[info] i  functions: Preparing to emulate functions.
+[debug] [2018-04-05T14:27:33.285Z] Fetching environment
+[debug] [2018-04-05T14:27:33.303Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/232780507133:getServerAppConfig  
+  
+ Thu Apr 05 2018 20:27:33 GMT+0600 (Bangladesh Standard Time)
+[debug] [2018-04-05T14:27:33.304Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/232780507133/clients/_:getWebAppConfig  
+  
+ Thu Apr 05 2018 20:27:33 GMT+0600 (Bangladesh Standard Time)
+[debug] [2018-04-05T14:27:34.186Z] <<< HTTP RESPONSE 200
+[debug] [2018-04-05T14:27:34.186Z] Starting @google-cloud/functions-emulator
+[debug] [2018-04-05T14:27:34.255Z] <<< HTTP RESPONSE 200
+[info] i  hosting: Serving hosting files from: public
+[info] +  hosting: Local server: http://localhost:5000
+
+[debug] [2018-04-05T14:27:39.476Z] Parsing function triggers
+[info] +  functions: app: http://localhost:5001/firenode-5276f/us-central1/app
+[info] [hosting] Rewriting /products to local function app
+[info] [hosting] Rewriting /products to local function app
+[info] [hosting] Rewriting /products to local function app
+[info] [hosting] Rewriting /products to local function app
+[info] [hosting] Rewriting /products to local function app
+[info] [hosting] Rewriting /products to local function app
+[info] [hosting] Rewriting /products to local function app
+[info] [hosting] Rewriting /products to local function app
+[info] [hosting] Rewriting /products to local function app
