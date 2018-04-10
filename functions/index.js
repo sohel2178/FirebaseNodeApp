@@ -1,16 +1,22 @@
+
 const functions = require('firebase-functions');
 
 const path = require('path');
+const os = require('os');
+const fs = require('fs');
+
+
+const cors = require('cors')({origin:true});
+const Busboy = require('busboy');
 
 const express = require('express');
-
 const bodyParser = require('body-parser');
-
 const engines = require('consolidate');
-
 const firebase = require('firebase-admin');
 
 const firebaseApp = firebase.initializeApp(functions.config().firebase);
+
+//firebaseApp.storage().bucket('Products').upload()
 
 const app = express();
 
@@ -49,9 +55,18 @@ app.use((req,res,next) => {
 
 app.get('/',(request,response)=>{
 
-    const ref = firebaseApp.database().ref('facts');
-    response.render('home');
+    console.log(firebaseApp.storage().bucket().name);
+
+    //const ref = firebaseApp.database().ref('facts');
+    response.render('home',{partials:{navbar:'./partials/navbar',head:'./partials/head'}});
 });
+
+
+app.post('/uploads',(req,res)=>{
+
+  uploadFile(req,res);
+
+})
 
 app.post('/api/products', function (req, res) {
     var ref = firebaseApp.database().ref('/products');
@@ -60,22 +75,30 @@ app.post('/api/products', function (req, res) {
         name: req.body.name,
         price:req.body.price
     };
-    /* var obj = [{
-        id: "123",
-        description: "Android Newborn Pacifier"
-      },
-      {
-        id: "345",
-        description: "Android Pixel"
-      },
-      {
-        id: "223",
-        description: "Chromecast Ultra"
-      }
-    ]; */
-    res.send(ref.push(product)); // Creates a new ref with a new "push key"
+
+
+
+    //const key = ref.push().key;
+
+    var key = ref.push().key;
+
+    console.log(key);
+
+    ref.child(key).set(product).then(()=>{
+      return res.send(key);
+    }).catch(err=>{
+      console.log(err);
+      res.send(err);
+    })
+    
+    
+
+
+    /* res.send(ref.push(product)); // Creates a new ref with a new "push key"
     ref.set(obj); // Overwrites the path
-    ref.update(obj); // Updates only the specified attributes
+    ref.update(obj); // Updates only the specified attributes */
+
+    
   });
 
   app.get('/api/products', function (req, res) {
@@ -97,5 +120,100 @@ app.post('/api/products', function (req, res) {
       req.send("The read failed: " + errorObject.code);
     });
   });
+
+
+  function uploadFile(req,res){
+    cors(req,res,()=>{
+
+      if(req.method !=='POST'){
+        return res.status(500).json({
+            message: "Not Allowed"
+        })
+      }
+  
+      const busboy = new Busboy({headers:req.headers});
+  
+      let uploadData = null;
+  
+      let myFileName = null;
+  
+      busboy.on('file',(fieldname,fileStream,filename,encoding,mimetype)=>{
+          const filePath = path.join(os.tmpdir(),filename);
+  
+          //console.log(fieldname);
+          //console.log(fileStream);
+          console.log(filename);
+          //console.log(encoding);
+          //console.log(mimetype);
+  
+          myFileName = filename;
+  
+          uploadData = {file:filePath,mimetype:mimetype};
+  
+          fileStream.pipe(fs.createWriteStream(filePath));
+      });
+  
+      busboy.on('finish',()=>{
+  
+          //const bucket = gcs.bucket('firenode-5276f.appspot.com');
+          const bucket = firebaseApp.storage().bucket();
+
+        
+
+
+
+          //const imageRef = bucket.child('Images');
+  
+          bucket.upload(uploadData.file,{
+              uploadType:'media',
+              metadata:{
+                  metadata:{
+                      contentType:uploadData.mimetype
+                  }
+              }
+          }).then(storageFile=>{
+              console.log(storageFile);
+              console.log(myFileName);
+  
+              return res.status(200).json({
+                message:"Image Uploaded Successfully",
+                url:myFileName
+  
+              })
+  
+              /* bucket.file(myFileName).getSignedUrl({
+                action:'read',
+                expires:'03-09-2491'
+              }).then(signedurl=>{
+                
+              }).catch(err=>{
+                console.log(err);
+                res.status(500).json({
+                  message:"Error Occur",
+                  error:err.message
+                  
+                });
+              }) */
+  
+          
+  
+              
+  
+              
+  
+          }).catch((err)=>{
+              res.status(500).json({
+                  message:"Error Occur",
+                  error:err.message
+                  
+              });
+          });
+  
+      });
+  
+      busboy.end(req.rawBody);
+  
+    });
+  }
 
 exports.app = functions.https.onRequest(app);

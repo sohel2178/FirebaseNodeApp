@@ -11,7 +11,7 @@
       "source" : "**",
       "headers" : [{
         "key" : "Cache-Control",
-        "value" : "max-age=300"
+        "value" : "max-age=100"
         }]
     }],
     "rewrites": [
