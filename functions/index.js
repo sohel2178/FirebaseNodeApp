@@ -166,6 +166,7 @@ app.post('/api/products', function (req, res) {
   
           bucket.upload(uploadData.file,{
               uploadType:'media',
+              destination:'Images/'+myFileName,
               metadata:{
                   metadata:{
                       contentType:uploadData.mimetype
