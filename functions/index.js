@@ -16,7 +16,12 @@ const firebase = require('firebase-admin');
 // Test Package
 const Multer = require('multer');
 
-const firebaseApp = firebase.initializeApp(functions.config().firebase);
+const FirebaseUtil = require('./firebase_app');
+
+
+
+//const firebaseApp = firebase.initializeApp(functions.config().firebase);
+const firebaseApp = FirebaseUtil.firebaseApp;
 
 //firebaseApp.storage().bucket('Products').upload()
 
@@ -139,15 +144,15 @@ app.post('/api/products', function (req, res) {
     
   });
 
-  app.get('/api/products', function (req, res) {
-      res.set('Cache-Control','public,max-age=300,s-maxage=600');
+  app.get('/api/products',FirebaseUtil.getAllProduct)
+     /*  res.set('Cache-Control','public,max-age=300,s-maxage=600');
     
     firebaseApp.database().ref("/products").on('value', function(snapshot){
       res.send(snapshot.val());
     }, function(errorObject) {
       req.send("The read failed: " + errorObject.code);
-    });
-  });
+    }); */
+  
 
   app.get('/products',function(req,res){
     firebaseApp.database().ref("/products").on('value', function(snapshot){
