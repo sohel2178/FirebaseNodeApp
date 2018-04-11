@@ -13,12 +13,37 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const engines = require('consolidate');
 const firebase = require('firebase-admin');
+// Test Package
+const Multer = require('multer');
 
 const firebaseApp = firebase.initializeApp(functions.config().firebase);
 
 //firebaseApp.storage().bucket('Products').upload()
 
 const app = express();
+
+
+//app.use(cors());
+
+
+const multer = Multer();
+
+
+const handleFieldsWithMulter = multer.fields([
+  { name: 'name' },
+  { name: 'price' },
+  { name: 'image' }
+]);
+
+const handlePostWithMulter = (req, res) => {
+  const formData = req.body;
+  res.status(200).send(formData);
+}
+
+const loggingMiddleware = (req, res, next) => {
+  console.log(`request body: ${req.body}`);
+  next();
+}
 
 // View Engine Setup
 app.engine('hbs',engines.handlebars);
@@ -53,6 +78,8 @@ app.use((req,res,next) => {
 
 });
 
+
+
 app.get('/',(request,response)=>{
 
     console.log(firebaseApp.storage().bucket().name);
@@ -61,14 +88,24 @@ app.get('/',(request,response)=>{
     response.render('home',{partials:{navbar:'./partials/navbar',head:'./partials/head'}});
 });
 
+//app.post('/mmmm',loggingMiddleware, handleFieldsWithMulter, handlePostWithMulter);
+app.post('/mmmm',multer.any(),(req,res)=>{
+
+    console.log(req.files);
+    console.log(req.body.name);
+    console.log(req.body.price);
+    console.log(req.body);
+  
+  
+});
+
 
 app.post('/uploads',(req,res)=>{
-
   uploadFile(req,res);
-
 })
 
 app.post('/api/products', function (req, res) {
+    console.log(req.body);
     var ref = firebaseApp.database().ref('/products');
 
     var product = {
@@ -86,6 +123,7 @@ app.post('/api/products', function (req, res) {
 
     ref.child(key).set(product).then(()=>{
       return res.send(key);
+      //return uploadFile(req,res,key);
     }).catch(err=>{
       console.log(err);
       res.send(err);
@@ -134,72 +172,97 @@ app.post('/api/products', function (req, res) {
       const busboy = new Busboy({headers:req.headers});
   
       let uploadData = null;
+
+      let formData = new Map();
+
+      let counter = 0;
+      let myfileKey = "";
   
-      let myFileName = null;
-  
-      busboy.on('file',(fieldname,fileStream,filename,encoding,mimetype)=>{
-          const filePath = path.join(os.tmpdir(),filename);
-  
-          //console.log(fieldname);
-          //console.log(fileStream);
-          console.log(filename);
-          //console.log(encoding);
-          //console.log(mimetype);
-  
-          myFileName = filename;
-  
-          uploadData = {file:filePath,mimetype:mimetype};
-  
-          fileStream.pipe(fs.createWriteStream(filePath));
-      });
-  
-      busboy.on('finish',()=>{
-  
-          //const bucket = gcs.bucket('firenode-5276f.appspot.com');
-          const bucket = firebaseApp.storage().bucket();
+      //let myFileName = null;
+
+      busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) {
+        
+        //req.pause();
+        //console.log('Field [' + fieldname + ']: value: ' + val);
+        formData.set(fieldname,val);
+        counter++;
+
+        if(counter===2){
+          req.pause();
 
         
 
+          // Update Database and Get Key
 
+          var ref = firebaseApp.database().ref('/products');
 
+          var product = {
+              name: formData.get('name'),
+              price:formData.get('price')
+          };
+          //const key = ref.push().key;
+
+          var key = ref.push().key;
+
+          
+
+          ref.child(key).set(product).then(()=>{
+            myfileKey = key;
+
+            console.log("Key Name Set as : "+myfileKey);
+            //return res.send(key);
+            //return uploadFile(req,res,key);
+            req.resume(); // REsume The Request
+            return;
+          }).catch(err=>{
+            console.log(err);
+            res.send(err);
+          })
+
+          console.log("Name: ",formData.get('name'));
+          console.log("Price: ",formData.get('price'));
+          console.log("Counter: ",counter);
+
+          
+
+        }
+
+        
+      });
+  
+      busboy.on('file',(fieldname,fileStream,filename,encoding,mimetype)=>{
+        //myFileName = fileName;
+        console.log("Key Name ",myfileKey);
+        const filePath = path.join(os.tmpdir(),filename);
+
+        uploadData = {file:filePath,mimetype:mimetype};
+
+        fileStream.pipe(fs.createWriteStream(filePath));
+      });
+
+      
+  
+      busboy.on('finish',()=>{
+
+          const bucket = firebaseApp.storage().bucket();
           //const imageRef = bucket.child('Images');
   
           bucket.upload(uploadData.file,{
               uploadType:'media',
-              destination:'Images/'+myFileName,
+              destination:'Images/'+myfileKey,
               metadata:{
                   metadata:{
                       contentType:uploadData.mimetype
                   }
               }
           }).then(storageFile=>{
-              console.log(storageFile);
-              console.log(myFileName);
-  
+              //console.log(storageFile);
+
               return res.status(200).json({
                 message:"Image Uploaded Successfully",
-                url:myFileName
+                url:myfileKey
   
               })
-  
-              /* bucket.file(myFileName).getSignedUrl({
-                action:'read',
-                expires:'03-09-2491'
-              }).then(signedurl=>{
-                
-              }).catch(err=>{
-                console.log(err);
-                res.status(500).json({
-                  message:"Error Occur",
-                  error:err.message
-                  
-                });
-              }) */
-  
-          
-  
-              
-  
               
   
           }).catch((err)=>{
